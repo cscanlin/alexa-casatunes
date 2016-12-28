@@ -1,0 +1,14 @@
+{
+    "dev": {
+        "aws_region": "us-east-1",
+        "app_function": "casatunes_controls.app",
+        "s3_bucket": "alexa-casatunes",
+        "use_precompiled_packages": false
+    },
+    "production": {
+        "aws_region": "us-east-1",
+        "app_function": "casatunes_controls.app",
+        "s3_bucket": "alexa-casatunes",
+        "use_precompiled_packages": false
+    }
+}
