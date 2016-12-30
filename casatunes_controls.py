@@ -4,17 +4,18 @@
 #
 # app = Flask(__name__)
 # ask = Ask(app, "/")
-#
-# @app.route('/test')
-# def test():
-#     return json.dumps({'hello': 'world!'})
+# class ClassName(object):
+#     @app.route('/test')
+#     def test():
+#         return json.dumps({'hello': 'world!'})
 #
 # if __name__ == '__main__':
 #     app.run(debug=True)
 
 import logging
+import os
 
-from flask import Flask, json, jsonify, render_template
+from flask import Flask, json
 from flask_ask import Ask, request, session, question, statement, context, audio, current_stream
 
 import requests
@@ -24,116 +25,110 @@ ask = Ask(app, '/')
 logger = logging.getLogger('flask_ask')
 logger.setLevel(logging.INFO)
 
-HEADERS = {'Content-Type': 'application/json'}
-with open('speechAssets/Rooms.json') as zone_file:
-    ROOM_ZONE_MAP = {k.lower(): v for k, v in json.load(zone_file).items()}
+def load_zone_map(zone_map_file_name):
+    with open(zone_map_file_name) as zone_file:
+        return {k.lower(): v for k, v in json.load(zone_file).items()}
 
-@ask.intent('CasaPlay')
-def play_song():
-    speech_text = 'Playing casa tunes'
-    requests.post(
-        'http://192.168.1.20/CasaTunes/CasaService.svc/PlaySong',
-        headers=HEADERS,
-        data=json.dumps({"ZoneID": None})
-    )
-    logger.info(speech_text)
-    return statement(speech_text).simple_card('ResumeIntent', speech_text)
+class CasaControls(object):
+    CASA_SERVER_IP = 'http://192.168.1.20'
+    CASA_SERVICE_ROUTE = 'CasaTunes/CasaService.svc'
+    HEADERS = {'Content-Type': 'application/json'}
+    ROOM_ZONE_MAP = load_zone_map('speechAssets/Rooms.json')
 
-@ask.intent('CasaPause')
-def pause_song():
-    speech_text = 'Pausing casa tunes'
-    requests.post(
-        'http://192.168.1.20/CasaTunes/CasaService.svc/PauseSong',
-        headers=HEADERS,
-        data=json.dumps({"ZoneID": None})
-    )
-    logger.info(speech_text)
-    return statement(speech_text).simple_card('PauseIntent', speech_text)
+    @staticmethod
+    def casa_route(endpoint):
+        return os.path.join(
+            CasaControls.CASA_SERVER_IP, CasaControls.CASA_SERVICE_ROUTE, endpoint
+        )
 
-@ask.intent('CasaPrevious')
-def previous_song():
-    speech_text = 'Playing previous Song on casa tunes'
-    requests.post(
-        'http://192.168.1.20/CasaTunes/CasaService.svc/PreviousSong',
-        headers=HEADERS,
-        data=json.dumps({"ZoneID": None})
-    )
-    logger.info(speech_text)
-    return statement(speech_text).simple_card('PreviousIntent', speech_text)
+    @staticmethod
+    def casa_command(intent, endpoint, speech_text, data={"ZoneID": None}, **kwargs):
+        speech_text = 'Playing casa tunes'
+        requests.post(
+            CasaControls.casa_route('PlaySong'),
+            headers=CasaControls.HEADERS,
+            data=json.dumps(data)
+        )
+        logger.info(speech_text)
+        return statement(speech_text).simple_card('CasaPlay', speech_text)
 
-@ask.intent('CasaNext')
-def next_song():
-    speech_text = 'Playing next Song on casa tunes'
-    requests.post(
-        'http://192.168.1.20/CasaTunes/CasaService.svc/NextSong',
-        headers=HEADERS,
-        data=json.dumps({"ZoneID": None})
-    )
-    logger.info(speech_text)
-    return statement(speech_text).simple_card('NextIntent', speech_text)
+    @staticmethod
+    @ask.intent('CasaPlay')
+    def play_song():
+        speech_text = 'Playing casa tunes'
+        requests.post(
+            CasaControls.casa_route('PlaySong'),
+            headers=CasaControls.HEADERS,
+            data=json.dumps({"ZoneID": None})
+        )
+        logger.info(speech_text)
+        return statement(speech_text).simple_card('CasaPlay', speech_text)
 
-@ask.intent('CasaTurnRoomOn', mapping={'room': 'Room'})
-def turn_room_on(room):
-    print(room, str(ROOM_ZONE_MAP[room]))
-    speech_text = 'Turning on music in {room}'.format(room=room)
-    requests.post(
-        'http://192.168.1.20/CasaTunes/CasaService.svc/SetZonePower',
-        headers=HEADERS,
-        data=json.dumps({
-            "Power": True,
-            "ZoneID": str(ROOM_ZONE_MAP[room])
-        })
-    )
-    logger.info(speech_text)
-    return statement(speech_text).simple_card('CasaTurnRoomOn', speech_text)
+    @staticmethod
+    @ask.intent('CasaPause')
+    def pause_song():
+        speech_text = 'Pausing casa tunes'
+        requests.post(
+            CasaControls.casa_route('PauseSong'),
+            headers=CasaControls.HEADERS,
+            data=json.dumps({"ZoneID": None})
+        )
+        logger.info(speech_text)
+        return statement(speech_text).simple_card('CasaPause', speech_text)
 
-@ask.intent('CasaTurnRoomOff', mapping={'room': 'Room'})
-def turn_room_off(room):
-    speech_text = 'Turning on music in {room}'.format(room=room)
-    print(room, str(ROOM_ZONE_MAP[room]))
-    requests.post(
-        'http://192.168.1.20/CasaTunes/CasaService.svc/SetZonePower',
-        headers=HEADERS,
-        data=json.dumps({
-            "Power": False,
-            "ZoneID": str(ROOM_ZONE_MAP[room])
-        })
-    )
-    logger.info(speech_text)
-    return statement(speech_text).simple_card('CasaTurnRoomOff', speech_text)
+    @staticmethod
+    @ask.intent('CasaPrevious')
+    def previous_song():
+        speech_text = 'Playing previous Song on casa tunes'
+        requests.post(
+            CasaControls.casa_route('PreviousSong'),
+            headers=CasaControls.HEADERS,
+            data=json.dumps({"ZoneID": None})
+        )
+        logger.info(speech_text)
+        return statement(speech_text).simple_card('CasaPrevious', speech_text)
 
-# @ask.intent('AMAZON.StopIntent')
-# def stop():
-#     return "", 200
+    @staticmethod
+    @ask.intent('CasaNext')
+    def next_song():
+        speech_text = 'Playing next Song on casa tunes'
+        requests.post(
+            CasaControls.casa_route('NextSong'),
+            headers=CasaControls.HEADERS,
+            data=json.dumps({"ZoneID": None})
+        )
+        logger.info(speech_text)
+        return statement(speech_text).simple_card('CasaNext', speech_text)
 
-# # optional callbacks
-# @ask.on_playback_started()
-# def started(offset, token):
-#     _infodump('STARTED Audio Stream at {} ms'.format(offset))
-#     _infodump('Stream holds the token {}'.format(token))
-#     _infodump('STARTED Audio stream from {}'.format(current_stream.url))
-#
-# @ask.on_playback_stopped()
-# def stopped(offset, token):
-#     _infodump('STOPPED Audio Stream at {} ms'.format(offset))
-#     _infodump('Stream holds the token {}'.format(token))
-#     _infodump('Stream stopped playing from {}'.format(current_stream.url))
-#
-#
-# @ask.on_playback_nearly_finished()
-# def nearly_finished():
-#     _infodump('Stream nearly finished from {}'.format(current_stream.url))
-#
-# @ask.on_playback_finished()
-# def stream_finished(token):
-#     _infodump('Playback has finished for stream with token {}'.format(token))
+    @staticmethod
+    @ask.intent('CasaTurnRoomOn', mapping={'room': 'Room'})
+    def turn_room_on(room):
+        speech_text = 'Turning on music in {room}'.format(room=room)
+        requests.post(
+            CasaControls.casa_route('SetZonePower'),
+            headers=CasaControls.HEADERS,
+            data=json.dumps({
+                "Power": True,
+                "ZoneID": str(CasaControls.ROOM_ZONE_MAP[room])
+            })
+        )
+        logger.info(speech_text)
+        return statement(speech_text).simple_card('CasaTurnRoomOn', speech_text)
 
-@ask.session_ended
-def session_ended():
-    return "", 200
-
-def _infodump(obj, indent=2):
-    logger.info(json.dumps(obj, indent=indent))
+    @staticmethod
+    @ask.intent('CasaTurnRoomOff', mapping={'room': 'Room'})
+    def turn_room_off(room):
+        speech_text = 'Turning on music in {room}'.format(room=room)
+        requests.post(
+            CasaControls.casa_route('SetZonePower'),
+            headers=CasaControls.HEADERS,
+            data=json.dumps({
+                "Power": False,
+                "ZoneID": str(CasaControls.ROOM_ZONE_MAP[room])
+            })
+        )
+        logger.info(speech_text)
+        return statement(speech_text).simple_card('CasaTurnRoomOff', speech_text)
 
 if __name__ == '__main__':
     app.run(debug=True)
