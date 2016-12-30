@@ -1,3 +1,10 @@
-DemoIntent begin demo
-SaxIntent play the sax
-SaxIntent play sax
+CasaPlay play music
+CasaPlay play
+CasaPlay start music
+CasaPlay start
+CasaPause pause
+CasaPause pause music
+CasaPrevious previous song
+CasaPrevious previous
+CasaNext next song
+CasaNext next

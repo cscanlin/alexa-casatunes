@@ -1,19 +1,22 @@
 {
   "intents": [
     {
+      "intent": "AMAZON.ResumeIntent"
+    },
+    {
       "intent": "AMAZON.PauseIntent"
     },
     {
-      "intent": "DemoIntent"
+      "intent": "CasaPlay"
     },
     {
-      "intent": "SaxIntent"
+      "intent": "CasaPause"
     },
     {
-      "intent": "AMAZON.StopIntent"
+      "intent": "CasaPrevious"
     },
     {
-      "intent": "AMAZON.ResumeIntent"
+      "intent": "CasaNext"
     }
   ]
 }

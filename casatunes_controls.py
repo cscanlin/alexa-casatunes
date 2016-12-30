@@ -17,71 +17,84 @@ import logging
 from flask import Flask, json, jsonify, render_template
 from flask_ask import Ask, request, session, question, statement, context, audio, current_stream
 
+import requests
+
 app = Flask(__name__)
 ask = Ask(app, "/")
-logging.getLogger('flask_ask').setLevel(logging.INFO)
+logger = logging.getLogger('flask_ask')
+logger.setLevel(logging.INFO)
 
-@app.route('/test')
-def test():
-    return json.dumps({'hello': 'world!'})
+HEADERS = {"Content-Type": "application/json"}
 
-@ask.launch
-def launch():
-    card_title = 'Audio Example'
-    text = 'Welcome to an audio example. You can ask to begin demo, or try asking me to play the sax.'
-    prompt = 'You can ask to begin demo, or try asking me to play the sax.'
-    return question(text).reprompt(prompt).simple_card(card_title, text)
+@ask.intent('CasaPlay')
+def play_song():
+    speech_text = 'Playing casa tunes'
+    requests.post(
+        'http://192.168.1.20/CasaTunes/CasaService.svc/PlaySong',
+        headers=HEADERS,
+        data=json.dumps({"ZoneID": 13})
+    )
+    logger.info(speech_text)
+    return statement(speech_text).simple_card('ResumeIntent', speech_text)
 
+@ask.intent('CasaPause')
+def pause_song():
+    speech_text = 'Pausing casa tunes'
+    requests.post(
+        'http://192.168.1.20/CasaTunes/CasaService.svc/PauseSong',
+        headers=HEADERS,
+        data=json.dumps({"ZoneID": 13})
+    )
+    logger.info(speech_text)
+    return statement(speech_text).simple_card('PauseIntent', speech_text)
 
-@ask.intent('DemoIntent')
-def demo():
-    speech = "Here's one of my favorites"
-    stream_url = 'https://www.vintagecomputermusic.com/mp3/s2t9_Computer_Speech_Demonstration.mp3'
-    return audio(speech).play(stream_url, offset=93000)
+@ask.intent('CasaPrevious')
+def previous_song():
+    speech_text = 'Playing previous Song on casa tunes'
+    requests.post(
+        'http://192.168.1.20/CasaTunes/CasaService.svc/PreviousSong',
+        headers=HEADERS,
+        data=json.dumps({"ZoneID": 13})
+    )
+    logger.info(speech_text)
+    return statement(speech_text).simple_card('PreviousIntent', speech_text)
 
+@ask.intent('CasaNext')
+def next_song():
+    speech_text = 'Playing next Song on casa tunes'
+    requests.post(
+        'http://192.168.1.20/CasaTunes/CasaService.svc/NextSong',
+        headers=HEADERS,
+        data=json.dumps({"ZoneID": 13})
+    )
+    logger.info(speech_text)
+    return statement(speech_text).simple_card('NextIntent', speech_text)
 
-# 'ask audio_skil Play the sax
-@ask.intent('SaxIntent')
-def george_michael():
-    speech = 'yeah you got it!'
-    stream_url = 'https://ia800203.us.archive.org/27/items/CarelessWhisper_435/CarelessWhisper.ogg'
-    return audio(speech).play(stream_url)
+# @ask.intent('AMAZON.StopIntent')
+# def stop():
+#     return "", 200
 
-
-@ask.intent('AMAZON.PauseIntent')
-def pause():
-    return audio('Paused the stream.').stop()
-
-
-@ask.intent('AMAZON.ResumeIntent')
-def resume():
-    return audio('Resuming.').resume()
-
-@ask.intent('AMAZON.StopIntent')
-def stop():
-    return audio('stopping').clear_queue(stop=True)
-
-# optional callbacks
-@ask.on_playback_started()
-def started(offset, token):
-    _infodump('STARTED Audio Stream at {} ms'.format(offset))
-    _infodump('Stream holds the token {}'.format(token))
-    _infodump('STARTED Audio stream from {}'.format(current_stream.url))
-
-@ask.on_playback_stopped()
-def stopped(offset, token):
-    _infodump('STOPPED Audio Stream at {} ms'.format(offset))
-    _infodump('Stream holds the token {}'.format(token))
-    _infodump('Stream stopped playing from {}'.format(current_stream.url))
-
-
-@ask.on_playback_nearly_finished()
-def nearly_finished():
-    _infodump('Stream nearly finished from {}'.format(current_stream.url))
-
-@ask.on_playback_finished()
-def stream_finished(token):
-    _infodump('Playback has finished for stream with token {}'.format(token))
+# # optional callbacks
+# @ask.on_playback_started()
+# def started(offset, token):
+#     _infodump('STARTED Audio Stream at {} ms'.format(offset))
+#     _infodump('Stream holds the token {}'.format(token))
+#     _infodump('STARTED Audio stream from {}'.format(current_stream.url))
+#
+# @ask.on_playback_stopped()
+# def stopped(offset, token):
+#     _infodump('STOPPED Audio Stream at {} ms'.format(offset))
+#     _infodump('Stream holds the token {}'.format(token))
+#     _infodump('Stream stopped playing from {}'.format(current_stream.url))
+#
+#
+# @ask.on_playback_nearly_finished()
+# def nearly_finished():
+#     _infodump('Stream nearly finished from {}'.format(current_stream.url))
+#
+# @ask.on_playback_finished()
+# def stream_finished(token):
+#     _infodump('Playback has finished for stream with token {}'.format(token))
 
 @ask.session_ended
 def session_ended():
