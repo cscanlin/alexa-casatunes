@@ -23,12 +23,12 @@ class CasaControls(object):
 
     @staticmethod
     def casa_route(endpoint):
-        return os.path.join(
+        return '/'.join((
             CasaControls.CASA_SERVER_IP, CasaControls.CASA_SERVICE_ROUTE, endpoint
-        )
+        ))
 
     @staticmethod
-    def casa_command(endpoint, speech_text, data={"ZoneID": None}):
+    def casa_command(endpoint, speech_text, data={"ZoneID": 0}):
         requests.post(
             CasaControls.casa_route(endpoint),
             headers=CasaControls.HEADERS,
