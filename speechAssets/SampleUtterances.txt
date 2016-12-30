@@ -8,3 +8,7 @@ CasaPrevious previous song
 CasaPrevious previous
 CasaNext next song
 CasaNext next
+CasaTurnRoomOn turn on {Room}
+CasaTurnRoomOn turn on music in {Room}
+CasaTurnRoomOff turn off {Room}
+CasaTurnRoomOff turn off music in {Room}

@@ -20,11 +20,13 @@ from flask_ask import Ask, request, session, question, statement, context, audio
 import requests
 
 app = Flask(__name__)
-ask = Ask(app, "/")
+ask = Ask(app, '/')
 logger = logging.getLogger('flask_ask')
 logger.setLevel(logging.INFO)
 
-HEADERS = {"Content-Type": "application/json"}
+HEADERS = {'Content-Type': 'application/json'}
+with open('speechAssets/Rooms.json') as zone_file:
+    ROOM_ZONE_MAP = {k.lower(): v for k, v in json.load(zone_file).items()}
 
 @ask.intent('CasaPlay')
 def play_song():
@@ -32,7 +34,7 @@ def play_song():
     requests.post(
         'http://192.168.1.20/CasaTunes/CasaService.svc/PlaySong',
         headers=HEADERS,
-        data=json.dumps({"ZoneID": 13})
+        data=json.dumps({"ZoneID": None})
     )
     logger.info(speech_text)
     return statement(speech_text).simple_card('ResumeIntent', speech_text)
@@ -43,7 +45,7 @@ def pause_song():
     requests.post(
         'http://192.168.1.20/CasaTunes/CasaService.svc/PauseSong',
         headers=HEADERS,
-        data=json.dumps({"ZoneID": 13})
+        data=json.dumps({"ZoneID": None})
     )
     logger.info(speech_text)
     return statement(speech_text).simple_card('PauseIntent', speech_text)
@@ -54,7 +56,7 @@ def previous_song():
     requests.post(
         'http://192.168.1.20/CasaTunes/CasaService.svc/PreviousSong',
         headers=HEADERS,
-        data=json.dumps({"ZoneID": 13})
+        data=json.dumps({"ZoneID": None})
     )
     logger.info(speech_text)
     return statement(speech_text).simple_card('PreviousIntent', speech_text)
@@ -65,10 +67,40 @@ def next_song():
     requests.post(
         'http://192.168.1.20/CasaTunes/CasaService.svc/NextSong',
         headers=HEADERS,
-        data=json.dumps({"ZoneID": 13})
+        data=json.dumps({"ZoneID": None})
     )
     logger.info(speech_text)
     return statement(speech_text).simple_card('NextIntent', speech_text)
+
+@ask.intent('CasaTurnRoomOn', mapping={'room': 'Room'})
+def turn_room_on(room):
+    print(room, str(ROOM_ZONE_MAP[room]))
+    speech_text = 'Turning on music in {room}'.format(room=room)
+    requests.post(
+        'http://192.168.1.20/CasaTunes/CasaService.svc/SetZonePower',
+        headers=HEADERS,
+        data=json.dumps({
+            "Power": True,
+            "ZoneID": str(ROOM_ZONE_MAP[room])
+        })
+    )
+    logger.info(speech_text)
+    return statement(speech_text).simple_card('CasaTurnRoomOn', speech_text)
+
+@ask.intent('CasaTurnRoomOff', mapping={'room': 'Room'})
+def turn_room_off(room):
+    speech_text = 'Turning on music in {room}'.format(room=room)
+    print(room, str(ROOM_ZONE_MAP[room]))
+    requests.post(
+        'http://192.168.1.20/CasaTunes/CasaService.svc/SetZonePower',
+        headers=HEADERS,
+        data=json.dumps({
+            "Power": False,
+            "ZoneID": str(ROOM_ZONE_MAP[room])
+        })
+    )
+    logger.info(speech_text)
+    return statement(speech_text).simple_card('CasaTurnRoomOff', speech_text)
 
 # @ask.intent('AMAZON.StopIntent')
 # def stop():
@@ -101,8 +133,7 @@ def session_ended():
     return "", 200
 
 def _infodump(obj, indent=2):
-    msg = json.dumps(obj, indent=indent)
-    logger.info(msg)
+    logger.info(json.dumps(obj, indent=indent))
 
 if __name__ == '__main__':
     app.run(debug=True)

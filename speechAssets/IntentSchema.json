@@ -17,6 +17,24 @@
     },
     {
       "intent": "CasaNext"
+    },
+    {
+      "intent": "CasaTurnRoomOn",
+      "slots": [
+        {
+          "name": "Room",
+          "type": "Room"
+        }
+      ]
+    },
+    {
+      "intent": "CasaTurnRoomOff",
+      "slots": [
+        {
+          "name": "Room",
+          "type": "Room"
+        }
+      ]
     }
   ]
 }
