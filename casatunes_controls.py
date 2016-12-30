@@ -1,22 +1,8 @@
-# from flask import Flask
-# from flask_ask import Ask
-# import json
-#
-# app = Flask(__name__)
-# ask = Ask(app, "/")
-# class ClassName(object):
-#     @app.route('/test')
-#     def test():
-#         return json.dumps({'hello': 'world!'})
-#
-# if __name__ == '__main__':
-#     app.run(debug=True)
-
 import logging
 import os
 
 from flask import Flask, json
-from flask_ask import Ask, request, session, question, statement, context, audio, current_stream
+from flask_ask import Ask, statement, request
 
 import requests
 
@@ -42,20 +28,19 @@ class CasaControls(object):
         )
 
     @staticmethod
-    def casa_command(intent, endpoint, speech_text, data={"ZoneID": None}):
+    def casa_command(endpoint, speech_text, data={"ZoneID": None}):
         requests.post(
             CasaControls.casa_route(endpoint),
             headers=CasaControls.HEADERS,
             data=json.dumps(data)
         )
         logger.info(speech_text)
-        return statement(speech_text).simple_card(intent, speech_text)
+        return statement(speech_text).simple_card(request.type, speech_text)
 
     @staticmethod
     @ask.intent('CasaPlay')
     def play_song():
         return CasaControls.casa_command(
-            intent='CasaPlay',
             endpoint='PlaySong',
             speech_text='Playing casa tunes'
         )
@@ -64,7 +49,6 @@ class CasaControls(object):
     @ask.intent('CasaPause')
     def pause_song():
         return CasaControls.casa_command(
-            intent='CasaPause',
             endpoint='PauseSong',
             speech_text='Pausing casa tunes'
         )
@@ -73,7 +57,6 @@ class CasaControls(object):
     @ask.intent('CasaPrevious')
     def previous_song():
         return CasaControls.casa_command(
-            intent='CasaPrevious',
             endpoint='PreviousSong',
             speech_text='Playing previous Song on casa tunes'
         )
@@ -82,7 +65,6 @@ class CasaControls(object):
     @ask.intent('CasaNext')
     def next_song():
         return CasaControls.casa_command(
-            intent='CasaNext',
             endpoint='NextSong',
             speech_text='Playing next Song on casa tunes'
         )
@@ -91,7 +73,6 @@ class CasaControls(object):
     @ask.intent('CasaTurnRoomOn', mapping={'room': 'Room'})
     def turn_room_on(room):
         return CasaControls.casa_command(
-            intent='CasaTurnRoomOn',
             endpoint='SetZonePower',
             speech_text='Turning on music in {room}'.format(room=room),
             data={
@@ -104,9 +85,8 @@ class CasaControls(object):
     @ask.intent('CasaTurnRoomOff', mapping={'room': 'Room'})
     def turn_room_off(room):
         return CasaControls.casa_command(
-            intent='CasaTurnRoomOn',
             endpoint='SetZonePower',
-            speech_text='Turning on music in {room}'.format(room=room),
+            speech_text='Turning off music in {room}'.format(room=room),
             data={
                 "Power": False,
                 "ZoneID": str(CasaControls.ROOM_ZONE_MAP[room])
