@@ -93,5 +93,19 @@ class CasaControls(object):
             },
         )
 
+    @staticmethod
+    @ask.intent('CasaSetRoomVolume', mapping={'room': 'Room', 'new_volume': 'Volume'})
+    def set_room_volume(room, new_volume):
+        return CasaControls.casa_command(
+            endpoint='SetZoneVolume',
+            speech_text='Setting volume in {room} to {new_volume}'.format(
+                room=room, new_volume=new_volume
+            ),
+            data={
+                "Volume": new_volume,
+                "ZoneID": str(CasaControls.ROOM_ZONE_MAP[room])
+            },
+        )
+
 if __name__ == '__main__':
     app.run(debug=True)
