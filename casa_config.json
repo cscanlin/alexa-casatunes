@@ -1,0 +1,24 @@
+{
+  "SERVER_IP": "http://192.168.1.20",
+  "SERVICE_ROUTE": "CasaTunes/CasaService.svc",
+  "HEADERS": {
+    "Content-Type": "application/json"
+  },
+  "ROOM_ZONE_MAP": {
+    "Outside": 9,
+    "Wine Room Audio": 10,
+    "Dining Room": 11,
+    "Sun Room": 12,
+    "Family Room": 13,
+    "Chris's Room": 14,
+    "Kitchen 2": 15,
+    "Tim's Room": 16,
+    "Kitchen 1": 17,
+    "Game Room": 18,
+    "Living Room": 19,
+    "Loft": 20,
+    "Master Bath": 21,
+    "Bill's Office": 22
+  },
+  "DEFAULT_ROOM": "Kitchen 1"
+}
