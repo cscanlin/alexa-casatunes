@@ -1,3 +1,4 @@
+CasaPlay play music
 AMAZON.ResumeIntent play music
 AMAZON.ResumeIntent start playing
 AMAZON.ResumeIntent start playing music
