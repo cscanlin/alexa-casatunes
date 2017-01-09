@@ -12,3 +12,7 @@ CasaTurnRoomOn turn on {Room}
 CasaTurnRoomOn turn on music in {Room}
 CasaTurnRoomOff turn off {Room}
 CasaTurnRoomOff turn off music in {Room}
+CasaSetRoomVolume change volume in {Room} to {Volume}
+CasaSetRoomVolume set volume in {Room} to {Volume}
+CasaSetRoomVolume change volume to {Volume} in {Room}
+CasaSetRoomVolume set volume to {Volume} in {Room}
