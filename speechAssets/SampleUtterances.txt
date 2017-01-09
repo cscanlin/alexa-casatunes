@@ -6,7 +6,7 @@ CasaTurnRoomOn turn on music in {Room}
 CasaTurnRoomOn start playing music in {Room}
 CasaTurnRoomOff turn off {Room}
 CasaTurnRoomOff turn off music in {Room}
-CasaTurnRoomOn stop playing music in {Room}
+CasaTurnRoomOff stop playing music in {Room}
 CasaSetRoomVolume change volume in {Room} to {Volume}
 CasaSetRoomVolume set volume in {Room} to {Volume}
 CasaSetRoomVolume change volume to {Volume} in {Room}
