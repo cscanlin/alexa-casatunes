@@ -4,19 +4,16 @@
       "intent": "AMAZON.ResumeIntent"
     },
     {
-      "intent": "AMAZON.PauseIntent"
-    },
-    {
       "intent": "CasaPlay"
     },
     {
-      "intent": "CasaPause"
+      "intent": "AMAZON.PauseIntent"
     },
     {
-      "intent": "CasaPrevious"
+      "intent": "AMAZON.PreviousIntent"
     },
     {
-      "intent": "CasaNext"
+      "intent": "AMAZON.NextIntent"
     },
     {
       "intent": "CasaTurnRoomOn",
@@ -33,6 +30,19 @@
         {
           "name": "Room",
           "type": "Room"
+        }
+      ]
+    },
+    {
+      "intent": "CasaSetRoomVolume",
+      "slots": [
+        {
+          "name": "Room",
+          "type": "Room"
+        },
+        {
+          "name": "Volume",
+          "type": "AMAZON.NUMBER"
         }
       ]
     }

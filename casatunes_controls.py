@@ -1,5 +1,4 @@
 import logging
-import os
 
 from flask import Flask, json
 from flask_ask import Ask, statement, request
@@ -38,6 +37,7 @@ class CasaControls(object):
         return statement(speech_text).simple_card(request.type, speech_text)
 
     @staticmethod
+    @ask.intent('AMAZON.ResumeIntent')
     @ask.intent('CasaPlay')
     def play_song():
         return CasaControls.casa_command(
@@ -46,7 +46,7 @@ class CasaControls(object):
         )
 
     @staticmethod
-    @ask.intent('CasaPause')
+    @ask.intent('AMAZON.PauseIntent')
     def pause_song():
         return CasaControls.casa_command(
             endpoint='PauseSong',
@@ -54,7 +54,7 @@ class CasaControls(object):
         )
 
     @staticmethod
-    @ask.intent('CasaPrevious')
+    @ask.intent('AMAZON.PreviousIntent')
     def previous_song():
         return CasaControls.casa_command(
             endpoint='PreviousSong',
@@ -62,7 +62,7 @@ class CasaControls(object):
         )
 
     @staticmethod
-    @ask.intent('CasaNext')
+    @ask.intent('AMAZON.NextIntent')
     def next_song():
         return CasaControls.casa_command(
             endpoint='NextSong',
@@ -70,7 +70,7 @@ class CasaControls(object):
         )
 
     @staticmethod
-    @ask.intent('CasaTurnRoomOn', mapping={'room': 'Room'})
+    @ask.intent('CasaTurnRoomOn', mapping={'room': 'Room'}, default={'room': 'kitchen 1'})
     def turn_room_on(room):
         return CasaControls.casa_command(
             endpoint='SetZonePower',
