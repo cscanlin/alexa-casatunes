@@ -5,7 +5,7 @@ from flask_ask import Ask, statement, request
 
 import requests
 
-from casa_utils import load_casa_config
+from utils import load_casa_config
 
 logger = logging.getLogger('flask_ask')
 logger.setLevel(logging.INFO)
