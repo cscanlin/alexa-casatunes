@@ -20,5 +20,6 @@
     "Master Bath": 21,
     "Bill's Office": 22
   },
-  "DEFAULT_ROOM": "Kitchen 1"
+  "DEFAULT_ROOM": "Kitchen 1",
+  "DEFAULT_QUEUE_TYPE": "ADD_AND_PLAY"
 }

@@ -7,8 +7,6 @@ import requests
 
 from utils import load_casa_config, parse_app_status, parse_search_request, parse_search_response
 
-from pprint import pprint
-
 logger = logging.getLogger('flask_ask')
 logger.setLevel(logging.INFO)
 
@@ -47,33 +45,31 @@ def speech_response(speech_text):
 @ask.intent('AMAZON.ResumeIntent')
 @ask.intent('CasaPlay')
 def play_song():
-    r = casa_command(endpoint='PlaySong')
+    casa_command(endpoint='PlaySong')
     speech_text = 'Playing casa tunes'
     return speech_response(speech_text)
 
 @ask.intent('AMAZON.PauseIntent')
 def pause_song():
-    r = casa_command(endpoint='PauseSong')
+    casa_command(endpoint='PauseSong')
     speech_text = 'Pausing casa tunes'
     return speech_response(speech_text)
 
 @ask.intent('AMAZON.PreviousIntent')
 def previous_song():
-    r = casa_command(endpoint='PreviousSong')
-    speech_text = 'Playing previous Song on casa tunes'
+    casa_command(endpoint='PreviousSong')
+    speech_text = 'Playing previous song on casa tunes'
     return speech_response(speech_text)
 
 @ask.intent('AMAZON.NextIntent')
 def next_song():
-    r = casa_command(endpoint='NextSong')
-    speech_text = 'Playing next Song on casa tunes'
+    casa_command(endpoint='NextSong')
+    speech_text = 'Playing next song on casa tunes'
     return speech_response(speech_text)
 
-@ask.intent('CasaTurnRoomOn', mapping={'room': 'Room'})
+@ask.intent('CasaTurnRoomOn', mapping={'room': 'Room'}, default={'room': CASA_CONFIG['DEFAULT_ROOM']})
 def turn_room_on(room):
-    if room is None:
-        room = CASA_CONFIG['DEFAULT_ROOM']
-    r = casa_command(
+    casa_command(
         endpoint='SetZonePower',
         data={
             'Power': True,
@@ -85,7 +81,7 @@ def turn_room_on(room):
 
 @ask.intent('CasaTurnRoomOff', mapping={'room': 'Room'})
 def turn_room_off(room):
-    r = casa_command(
+    casa_command(
         endpoint='SetZonePower',
         data={
             'Power': False,
@@ -97,7 +93,7 @@ def turn_room_off(room):
 
 @ask.intent('CasaSetRoomVolume', mapping={'room': 'Room', 'new_volume': 'Volume'})
 def set_room_volume(room, new_volume):
-    r = casa_command(
+    casa_command(
         endpoint='SetZoneVolume',
         data={
             'Volume': new_volume,
@@ -114,8 +110,8 @@ def set_room_volume(room, new_volume):
 @ask.intent('AMAZON.SearchAction<object@MusicRecording[byArtist]>')
 @ask.intent('AMAZON.SearchAction<object@MusicRecording[inAlbum]>')
 def now_playing_info():
-    r = casa_command(endpoint='GetAppStatus')
-    app_status = parse_app_status(casa_response=r)
+    status_response = casa_command(endpoint='GetAppStatus')
+    app_status = parse_app_status(status_response)
     speech_text = 'This song is called {title} by {artists} from the album {album}'.format(**app_status)
     return speech_response(speech_text)
 
@@ -133,8 +129,8 @@ def find_and_play_song():
             'Searchtext': search_data['creative_name'],
         },
     )
-    parsed_response = parse_search_response(search_response)
-    first_requested_item_id = parsed_response[requested_object_type][0]['ID']
+    parsed_search_response = parse_search_response(search_response)
+    first_requested_item_id = parsed_search_response[requested_object_type][0]['ID']
 
     casa_command(
         endpoint='PlayMediaCollectionOrItem2',
@@ -142,7 +138,7 @@ def find_and_play_song():
             'ZoneID': DEFAULT_ZONE,
             'ItemID': first_requested_item_id,
             'Filter': None,
-            'AddToQueue': QUEUE_SPOT_MAP['ADD_AND_PLAY'],
+            'AddToQueue': QUEUE_SPOT_MAP[CASA_CONFIG['DEFAULT_QUEUE_TYPE']],
         },
     )
 

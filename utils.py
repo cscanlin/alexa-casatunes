@@ -2,9 +2,6 @@ from collections import defaultdict
 import json
 import xml.etree.ElementTree as ET
 
-def select(arg):
-    pass
-
 def load_casa_config(config_file):
     with open(config_file) as cf:
         config = json.load(cf)
