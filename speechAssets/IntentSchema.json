@@ -51,6 +51,9 @@
     },
     {
       "intent": "AMAZON.SearchAction<object@MusicRecording[inAlbum]>"
+    },
+    {
+      "intent": "AMAZON.SearchAction<object@MusicCreativeWork>"
     }
   ]
 }

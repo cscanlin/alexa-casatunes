@@ -5,7 +5,7 @@ from flask_ask import Ask, statement, request
 
 import requests
 
-from utils import load_casa_config, parse_app_status
+from utils import load_casa_config, parse_app_status, parse_music_search_request
 
 logger = logging.getLogger('flask_ask')
 logger.setLevel(logging.INFO)
@@ -99,20 +99,21 @@ def set_room_volume(room, new_volume):
 # NOW PLAYING
 
 @ask.intent('AMAZON.SearchAction<object@MusicRecording[byArtist]>')
-def now_playing_artist():
-    r = casa_command(endpoint='GetAppStatus')
-    app_status = parse_app_status(casa_response=r)
-    speech_text = 'This song is played by {artists}'.format(**app_status)
-    return speech_response(speech_text)
-
 @ask.intent('AMAZON.SearchAction<object@MusicRecording[inAlbum]>')
-def now_playing_album():
+def now_playing_info():
     r = casa_command(endpoint='GetAppStatus')
     app_status = parse_app_status(casa_response=r)
-    speech_text = 'This song is on the album {album} by {artists}'.format(**app_status)
+    speech_text = 'This song is called {title} by {artists} from the album {album}'.format(**app_status)
     return speech_response(speech_text)
 
 # SEARCH
+@ask.intent('AMAZON.SearchAction<object@MusicCreativeWork>')
+def search_for_creative():
+    # r = casa_command(endpoint='GetAppStatus')
+    search_data = parse_music_search_request(request)
+    print(search_data['creative_type'])
+    speech_text = 'playing the {creative_type} {creative_name}'.format(**search_data)
+    return speech_response(speech_text)
 
 if __name__ == '__main__':
     app.run(debug=True)
