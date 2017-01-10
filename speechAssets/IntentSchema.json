@@ -45,6 +45,12 @@
           "type": "AMAZON.NUMBER"
         }
       ]
+    },
+    {
+      "intent": "AMAZON.SearchAction<object@MusicRecording[byArtist]>"
+    },
+    {
+      "intent": "AMAZON.SearchAction<object@MusicRecording[inAlbum]>"
     }
   ]
 }
