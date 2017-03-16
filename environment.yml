@@ -1,0 +1,9 @@
+name: alexa-casa
+channels:
+- cscanlin
+- defaults
+dependencies:
+- python=2.7
+- flask
+- flask-ask
+- zappa

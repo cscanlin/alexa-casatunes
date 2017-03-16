@@ -31,7 +31,8 @@ def casa_route(endpoint):
         CASA_CONFIG['SERVER_IP'], CASA_CONFIG['SERVICE_ROUTE'], endpoint
     ))
 
-def casa_command(endpoint, data={'ZoneID': 0}):
+def casa_command(endpoint, data=None):
+    data = data if data else {'ZoneID': 0}
     return requests.post(
         casa_route(endpoint),
         headers=CASA_CONFIG['HEADERS'],
@@ -76,7 +77,7 @@ def turn_room_on(room):
             'ZoneID': str(CASA_CONFIG['ROOM_ZONE_MAP'][room.lower()]),
         },
     )
-    speech_text = 'Turning on music in {room}'.format(room=room),
+    speech_text = 'Turning on music in {room}'.format(room=room)
     return speech_response(speech_text)
 
 @ask.intent('CasaTurnRoomOff', mapping={'room': 'Room'})
@@ -88,7 +89,7 @@ def turn_room_off(room):
             'ZoneID': str(CASA_CONFIG['ROOM_ZONE_MAP'][room.lower()]),
         },
     )
-    speech_text = 'Turning off music in {room}'.format(room=room),
+    speech_text = 'Turning off music in {room}'.format(room=room)
     return speech_response(speech_text)
 
 @ask.intent('CasaSetRoomVolume', mapping={'room': 'Room', 'new_volume': 'Volume'})
