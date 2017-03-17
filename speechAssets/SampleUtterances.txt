@@ -1,3 +1,4 @@
+HelloIntent say hello
 CasaPlay play music
 AMAZON.ResumeIntent play music
 AMAZON.ResumeIntent start playing

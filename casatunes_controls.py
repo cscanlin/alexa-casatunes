@@ -43,6 +43,17 @@ def speech_response(speech_text):
     logger.info(speech_text)
     return statement(speech_text).simple_card(request.type, speech_text)
 
+@ask.intent('HelloIntent')
+def say_hello():
+    speech_text = 'Hello Chris'
+    logger.info(speech_text)
+    return statement(speech_text)
+
+@app.route('/')
+def hello():
+    logger.info('hello')
+    return json.dumps({'Hello': 'Chris'})
+
 @ask.intent('AMAZON.ResumeIntent')
 @ask.intent('CasaPlay')
 def play_song():
