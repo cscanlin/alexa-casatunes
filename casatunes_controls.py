@@ -29,17 +29,20 @@ ALEXA_CASA_TYPE_MAP = {
 
 def casa_route(endpoint):
     return '/'.join((
-        CASA_CONFIG['LOCAL_SERVER_ROUTE'], CASA_CONFIG['SERVICE_ROUTE'], endpoint
+        'localhost', CASA_CONFIG['SERVICE_ROUTE'], endpoint
     ))
 
 def casa_command(endpoint, data=None):
+    data = data if data else {'ZoneID': 0}
+
     s3_client = boto3.client('s3')
     s3_client.download_file('alexa-casatunes', 'keys/id_rsa', '/tmp/id_rsa')
+
     with SSHTunnelForwarder(
         (os.getenv('CASA_SERVER_IP'), 22222),
         ssh_username='casa',
         ssh_password=os.getenv('CASA_SSH_PASSWORD'),
-        remote_bind_address=(CASA_CONFIG['LOCAL_SERVER_ROUTE'], 5000)
+        remote_bind_address=('localhost', 25)
     ):
         data = data if data else {'ZoneID': 0}
         return requests.post(
@@ -50,19 +53,16 @@ def casa_command(endpoint, data=None):
 
 def speech_response(speech_text):
     logger.info(speech_text)
-    return statement(speech_text).simple_card(request.type, speech_text)
-
-@ask.intent('HelloIntent')
-def say_hello():
-    speech_text = 'Hello Chris'
-    logger.info(speech_text)
-    return statement(speech_text)
+    return statement(speech_text).simple_card(request.type, speech_text) if request else speech_text
 
 @app.route('/')
+@ask.intent('HelloIntent')
 def hello():
-    logger.info('hello')
-    return json.dumps({'Hello': 'Chris'})
+    speech_text = 'Hello Chris'
+    logger.info(speech_text)
+    return speech_response(speech_text)
 
+@app.route('/play')
 @ask.intent('AMAZON.ResumeIntent')
 @ask.intent('CasaPlay')
 def play_song():
@@ -70,6 +70,7 @@ def play_song():
     speech_text = 'Playing casa tunes'
     return speech_response(speech_text)
 
+@app.route('/pause')
 @ask.intent('AMAZON.PauseIntent')
 def pause_song():
     casa_command(endpoint='PauseSong')

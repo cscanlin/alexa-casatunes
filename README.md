@@ -1,6 +1,9 @@
-# alexa-casatunes
+### alexa-casatunes
 
 Control CasaTunes with Alexa
 
 
-<!-- source alexa-casa/bin/activate -->
+### Deploying
+
+source alexa-casa/bin/activate
+zappa update dev
