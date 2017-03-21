@@ -1,10 +1,11 @@
+import boto3
 import logging
+import os
+import requests
 
 from flask import Flask, json
 from flask_ask import Ask, statement, request
-
-import requests
-
+from sshtunnel import SSHTunnelForwarder
 from utils import load_casa_config, parse_app_status, parse_search_request, parse_search_response
 
 logger = logging.getLogger('flask_ask')
@@ -28,16 +29,24 @@ ALEXA_CASA_TYPE_MAP = {
 
 def casa_route(endpoint):
     return '/'.join((
-        CASA_CONFIG['SERVER_IP'], CASA_CONFIG['SERVICE_ROUTE'], endpoint
+        CASA_CONFIG['LOCAL_SERVER_ROUTE'], CASA_CONFIG['SERVICE_ROUTE'], endpoint
     ))
 
 def casa_command(endpoint, data=None):
-    data = data if data else {'ZoneID': 0}
-    return requests.post(
-        casa_route(endpoint),
-        headers=CASA_CONFIG['HEADERS'],
-        data=json.dumps(data)
-    )
+    s3_client = boto3.client('s3')
+    s3_client.download_file('alexa-casatunes', 'keys/id_rsa', '/tmp/id_rsa')
+    with SSHTunnelForwarder(
+        (os.getenv('CASA_SERVER_IP'), 22222),
+        ssh_username='casa',
+        ssh_password=os.getenv('CASA_SSH_PASSWORD'),
+        remote_bind_address=(CASA_CONFIG['LOCAL_SERVER_ROUTE'], 5000)
+    ):
+        data = data if data else {'ZoneID': 0}
+        return requests.post(
+            casa_route(endpoint),
+            headers=CASA_CONFIG['HEADERS'],
+            data=json.dumps(data)
+        )
 
 def speech_response(speech_text):
     logger.info(speech_text)

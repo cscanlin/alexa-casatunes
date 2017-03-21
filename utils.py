@@ -1,6 +1,7 @@
-from collections import defaultdict
 import json
 import xml.etree.ElementTree as ET
+
+from collections import defaultdict
 
 def load_casa_config(config_file):
     with open(config_file) as cf:
