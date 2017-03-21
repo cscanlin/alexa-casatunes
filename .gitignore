@@ -65,4 +65,3 @@ target/
 *.zip
 
 /alexa-casa
-casa_config.json
