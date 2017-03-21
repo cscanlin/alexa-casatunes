@@ -1,11 +1,10 @@
 import boto3
 import logging
 import os
-import requests
+import paramiko
 
 from flask import Flask, json
 from flask_ask import Ask, statement, request
-from sshtunnel import SSHTunnelForwarder
 from utils import load_casa_config, parse_app_status, parse_search_request, parse_search_response
 
 logger = logging.getLogger('flask_ask')
@@ -38,18 +37,22 @@ def casa_command(endpoint, data=None):
     s3_client = boto3.client('s3')
     s3_client.download_file('alexa-casatunes', 'keys/id_rsa', '/tmp/id_rsa')
 
-    with SSHTunnelForwarder(
-        (os.getenv('CASA_SERVER_IP'), 22222),
-        ssh_username='casa',
-        ssh_password=os.getenv('CASA_SSH_PASSWORD'),
-        remote_bind_address=('localhost', 25)
-    ):
-        data = data if data else {'ZoneID': 0}
-        return requests.post(
-            casa_route(endpoint),
-            headers=CASA_CONFIG['HEADERS'],
-            data=json.dumps(data)
+    with paramiko.SSHClient() as ssh:
+        ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+        ssh.connect(
+            hostname=os.getenv('CASA_SERVER_IP'),
+            username='casa',
+            password=os.getenv('CASA_SSH_PASSWORD'),
+            key_filename='/tmp/id_rsa',
+            port=22222,
         )
+        headers = ' '.join(['-H "{}: {}"'.format(k, v) for k, v in CASA_CONFIG['HEADERS'].items()])
+        command = 'curl -X POST {headers} -d \'{data}\' {route}'.format(
+            headers=headers,
+            data=json.dumps(data),
+            route=casa_route(endpoint),
+        )
+        ssh.exec_command(command)
 
 def speech_response(speech_text):
     logger.info(speech_text)
