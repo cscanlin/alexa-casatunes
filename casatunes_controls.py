@@ -13,6 +13,8 @@ logger.setLevel(logging.INFO)
 app = Flask(__name__)
 ask = Ask(app, '/')
 
+app.url_map.strict_slashes = False
+
 CASA_CONFIG = load_casa_config('casa_config.json')
 DEFAULT_ZONE = str(CASA_CONFIG['ROOM_ZONE_MAP'][CASA_CONFIG['DEFAULT_ROOM'].lower()])
 
