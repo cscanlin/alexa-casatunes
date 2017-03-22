@@ -14,6 +14,8 @@ logger.setLevel(logging.INFO)
 app = Flask(__name__)
 ask = Ask(app, '/')
 
+app.url_map.strict_slashes = False
+
 CASA_CONFIG = load_casa_config('casa_config.json')
 DEFAULT_ZONE = str(CASA_CONFIG['ROOM_ZONE_MAP'][CASA_CONFIG['DEFAULT_ROOM'].lower()])
 
@@ -42,7 +44,8 @@ def casa_command(endpoint, data=None):
         (os.getenv('CASA_SERVER_IP'), 22222),
         ssh_username='casa',
         ssh_password=os.getenv('CASA_SSH_PASSWORD'),
-        remote_bind_address=('localhost', 25)
+        ssh_pkey='/tmp/id_rsa',
+        remote_bind_address=('localhost', 22222)
     ):
         data = data if data else {'ZoneID': 0}
         return requests.post(
