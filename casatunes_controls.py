@@ -30,7 +30,7 @@ ALEXA_CASA_TYPE_MAP = {
 
 def casa_route(endpoint):
     return '/'.join((
-        'localhost', CASA_CONFIG['SERVICE_ROUTE'], endpoint
+        'http://localhost', CASA_CONFIG['SERVICE_ROUTE'], endpoint
     ))
 
 def casa_command(endpoint, data=None):
