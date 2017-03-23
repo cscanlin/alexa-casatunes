@@ -12,4 +12,6 @@ Control CasaTunes with Alexa
 
 ### Deploying
 
-    zappa update dev
+    docker build -t zappa .
+
+    sh deploy_zappa.sh

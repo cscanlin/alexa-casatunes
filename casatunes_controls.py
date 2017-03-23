@@ -30,7 +30,7 @@ ALEXA_CASA_TYPE_MAP = {
 
 def casa_route(endpoint):
     return '/'.join((
-        'http://localhost', CASA_CONFIG['SERVICE_ROUTE'], endpoint
+        CASA_CONFIG['LOCAL_SERVER_ROUTE'], CASA_CONFIG['SERVICE_ROUTE'], endpoint
     ))
 
 def casa_command(endpoint, data=None):
@@ -179,4 +179,5 @@ def find_and_play_song():
     return speech_response(speech_text)
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    DEBUG = os.getenv('CASA_SERVER_IP') == '192.168.1.20'
+    app.run(debug=DEBUG)
