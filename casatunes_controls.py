@@ -18,7 +18,9 @@ app.url_map.strict_slashes = False
 CASA_CONFIG = load_casa_config('casa_config.json')
 
 DEBUG = os.getenv('CASA_SERVER_IP') in CASA_CONFIG['LOCAL_SERVER_ROUTE']
-DEFAULT_ZONE = str(CASA_CONFIG['ROOM_ZONE_MAP'][CASA_CONFIG['DEFAULT_ROOM'].lower()])
+
+SERVICE_ROUTE = 'CasaTunes/CasaService.svc'
+CASA_HEADERS = {'Content-Type': 'application/json'}
 
 QUEUE_SPOT_MAP = {
     'ADD_AND_PLAY': 2,
@@ -32,7 +34,7 @@ ALEXA_CASA_TYPE_MAP = {
 
 def casa_route(endpoint):
     return '/'.join((
-        CASA_CONFIG['LOCAL_SERVER_ROUTE'], CASA_CONFIG['SERVICE_ROUTE'], endpoint
+        CASA_CONFIG['LOCAL_SERVER_ROUTE'], SERVICE_ROUTE, endpoint
     ))
 
 def casa_command(endpoint, data=None):
@@ -55,7 +57,7 @@ def casa_command(endpoint, data=None):
             key_filename='/tmp/id_rsa',
             port=22222,
         )
-        headers = ' '.join(['-H "{}: {}"'.format(k, v) for k, v in CASA_CONFIG['HEADERS'].items()])
+        headers = ' '.join(['-H "{}: {}"'.format(k, v) for k, v in CASA_HEADERS.items()])
         command = 'curl -X POST {headers} -d \'{data}\' {route}'.format(
             headers=headers,
             data=json.dumps(data),
@@ -158,7 +160,7 @@ def find_and_play_song():
     search_response = casa_command(
         endpoint='SearchMediaCollectionByZone',
         data={
-            'ZoneID': DEFAULT_ZONE,
+            'ZoneID': str(CASA_CONFIG['DEFAULT_ZONE']),
             'SearchCurrentMusicServiceOnly': True,
             'Searchtext': search_data['creative_name'],
         },
@@ -169,7 +171,7 @@ def find_and_play_song():
     casa_command(
         endpoint='PlayMediaCollectionOrItem2',
         data={
-            'ZoneID': DEFAULT_ZONE,
+            'ZoneID': str(CASA_CONFIG['DEFAULT_ZONE']),
             'ItemID': first_requested_item_id,
             'Filter': None,
             'AddToQueue': QUEUE_SPOT_MAP[CASA_CONFIG['DEFAULT_QUEUE_TYPE']],
