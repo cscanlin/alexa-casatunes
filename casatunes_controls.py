@@ -3,8 +3,8 @@ import logging
 import os
 import paramiko
 
-from flask import Flask, json
-from flask_ask import Ask, statement, request
+from flask import Flask, json, abort
+from flask_ask import Ask, statement, request, session
 from utils import load_casa_config, parse_app_status, parse_search_request, parse_search_response
 
 logger = logging.getLogger('flask_ask')
@@ -16,6 +16,8 @@ ask = Ask(app, '/')
 app.url_map.strict_slashes = False
 
 CASA_CONFIG = load_casa_config('casa_config.json')
+
+DEBUG = os.getenv('CASA_SERVER_IP') in CASA_CONFIG['LOCAL_SERVER_ROUTE']
 DEFAULT_ZONE = str(CASA_CONFIG['ROOM_ZONE_MAP'][CASA_CONFIG['DEFAULT_ROOM'].lower()])
 
 QUEUE_SPOT_MAP = {
@@ -34,6 +36,11 @@ def casa_route(endpoint):
     ))
 
 def casa_command(endpoint, data=None):
+    if DEBUG or (session and session.user.userId == os.getenv('ALEXA_USER_ID')):
+        pass
+    else:
+        abort(403)
+
     data = data if data else {'ZoneID': 0}
 
     s3_client = boto3.client('s3')
@@ -179,5 +186,4 @@ def find_and_play_song():
     return speech_response(speech_text)
 
 if __name__ == '__main__':
-    DEBUG = os.getenv('CASA_SERVER_IP') == '192.168.1.20'
     app.run(debug=DEBUG)

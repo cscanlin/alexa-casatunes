@@ -1,5 +1,5 @@
 {
-  "LOCAL_SERVER_ROUTE": "http://localhost",
+  "LOCAL_SERVER_ROUTE": "http://192.168.1.20",
   "SERVICE_ROUTE": "CasaTunes/CasaService.svc",
   "HEADERS": {
     "Content-Type": "application/json"
