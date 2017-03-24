@@ -38,7 +38,7 @@ def casa_route(endpoint):
     ))
 
 def casa_command(endpoint, data=None):
-    if DEBUG or (session and session.user.userId == os.getenv('ALEXA_USER_ID')):
+    if DEBUG or (session and session.user.userId in os.getenv('ALEXA_USER_ID').split(';')):
         pass
     else:
         abort(403)
