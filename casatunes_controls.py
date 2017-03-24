@@ -46,7 +46,7 @@ def casa_command(endpoint, data=None):
     data = data if data else {'ZoneID': 0}
 
     s3_client = boto3.client('s3')
-    s3_client.download_file('alexa-casatunes', 'keys/id_rsa', '/tmp/id_rsa')
+    s3_client.download_file('alexa-casatunes', 'keys/casa_rsa', '/tmp/casa_rsa')
 
     with paramiko.SSHClient() as ssh:
         ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
@@ -54,7 +54,7 @@ def casa_command(endpoint, data=None):
             hostname=os.getenv('CASA_SERVER_IP'),
             username='casa',
             password=os.getenv('CASA_SSH_PASSWORD'),
-            key_filename='/tmp/id_rsa',
+            key_filename='/tmp/casa_rsa',
             port=22222,
         )
         headers = ' '.join(['-H "{}: {}"'.format(k, v) for k, v in CASA_HEADERS.items()])
