@@ -5,7 +5,8 @@ from collections import defaultdict
 from functools import reduce
 
 def deep_get(dictionary, *keys):
-    return reduce(lambda d, key: d.get(key) if d else None, keys, dictionary)
+    # http://stackoverflow.com/a/40675868/1883900
+    return reduce(lambda d, key: d.get(key, None) if hasattr(d, '__getitem__') else None, keys, dictionary)
 
 def load_casa_config(config_file):
     with open(config_file) as cf:
