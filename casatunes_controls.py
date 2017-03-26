@@ -5,10 +5,10 @@ import paramiko
 
 from flask import Flask, json, abort
 from flask_ask import Ask, statement, request, session
-from utils import load_casa_config, parse_app_status, parse_search_request, parse_search_response
+from utils import load_casa_config, parse_app_status, parse_search_request, parse_search_response, search_speech_text
 
 logger = logging.getLogger('flask_ask')
-logger.setLevel(logging.INFO)
+logger.setLevel(logging.DEBUG)
 
 app = Flask(__name__)
 ask = Ask(app, '/')
@@ -22,6 +22,8 @@ DEBUG = os.getenv('CASA_SERVER_IP') in CASA_CONFIG['LOCAL_SERVER_ROUTE']
 SERVICE_ROUTE = 'CasaTunes/CasaService.svc'
 CASA_HEADERS = {'Content-Type': 'application/json'}
 
+DEFAULT_QUEUE_TYPE = 'ADD_AND_PLAY'
+
 QUEUE_SPOT_MAP = {
     'ADD_AND_PLAY': 2,
 }
@@ -30,6 +32,7 @@ ALEXA_CASA_TYPE_MAP = {
     'artist': 'Artists',
     'album': 'Albums',
     'song': 'Tracks',
+    'genre': 'Playlists',
 }
 
 def casa_route(endpoint):
@@ -38,6 +41,9 @@ def casa_route(endpoint):
     ))
 
 def casa_command(endpoint, data=None):
+    # if request is not None:
+    #     logger.debug(json.dumps(request))
+
     if DEBUG or (session and session.user.userId in os.getenv('ALEXA_USER_ID').split(';')):
         pass
     else:
@@ -63,7 +69,11 @@ def casa_command(endpoint, data=None):
             data=json.dumps(data),
             route=casa_route(endpoint),
         )
-        ssh.exec_command(command)
+        _, stdout, stderr = ssh.exec_command(command)
+        response_data = json.loads(stdout.read())
+
+        logger.debug(json.dumps(response_data))
+        return response_data
 
 def speech_response(speech_text):
     logger.info(speech_text)
@@ -103,7 +113,7 @@ def next_song():
     speech_text = 'Playing next song on casa tunes'
     return speech_response(speech_text)
 
-@ask.intent('CasaTurnRoomOn', mapping={'room': 'Room'}, default={'room': CASA_CONFIG['DEFAULT_ROOM']})
+@ask.intent('CasaTurnRoomOn', mapping={'room': 'Room'}, default={'room': CASA_CONFIG['DEFAULT_ZONE']})
 def turn_room_on(room):
     casa_command(
         endpoint='SetZonePower',
@@ -133,7 +143,7 @@ def set_room_volume(room, new_volume):
         endpoint='SetZoneVolume',
         data={
             'Volume': new_volume,
-            'ZoneID': str(CASA_CONFIG['ROOM_ZONE_MAP'][room.lower()])
+            'ZoneID': str(CASA_CONFIG['ROOM_ZONE_MAP'][room.lower()]),
         },
     )
     speech_text = 'Setting volume in {room} to {new_volume}'.format(
@@ -154,19 +164,20 @@ def now_playing_info():
 # SEARCH
 @ask.intent('AMAZON.SearchAction<object@MusicCreativeWork>')
 def find_and_play_song():
-    search_data = parse_search_request(request)
-    requested_object_type = ALEXA_CASA_TYPE_MAP[search_data['creative_type']]
+    parsed_request = parse_search_request(request)
+    casa_creative_type = ALEXA_CASA_TYPE_MAP[parsed_request['creative_type']]
+    logger.debug(json.dumps(parsed_request))
 
-    search_response = casa_command(
+    search_response_data = casa_command(
         endpoint='SearchMediaCollectionByZone',
         data={
             'ZoneID': str(CASA_CONFIG['DEFAULT_ZONE']),
             'SearchCurrentMusicServiceOnly': True,
-            'Searchtext': search_data['creative_name'],
+            'Searchtext': parsed_request['search_text'],
         },
     )
-    parsed_search_response = parse_search_response(search_response)
-    first_requested_item_id = parsed_search_response[requested_object_type][0]['ID']
+    parsed_search_response = parse_search_response(search_response_data)
+    first_requested_item_id = parsed_search_response[casa_creative_type][0]['ID']
 
     casa_command(
         endpoint='PlayMediaCollectionOrItem2',
@@ -174,18 +185,11 @@ def find_and_play_song():
             'ZoneID': str(CASA_CONFIG['DEFAULT_ZONE']),
             'ItemID': first_requested_item_id,
             'Filter': None,
-            'AddToQueue': QUEUE_SPOT_MAP[CASA_CONFIG['DEFAULT_QUEUE_TYPE']],
+            'AddToQueue': QUEUE_SPOT_MAP[DEFAULT_QUEUE_TYPE],
         },
     )
 
-    speech_text = 'playing'
-    if search_data['creative_type']:
-        speech_text += ' the {creative_type} {creative_name}'.format(**search_data)
-        if search_data['artist']:
-            speech_text += ' by'
-    if search_data['artist']:
-        speech_text += ' {}'.format(search_data['artist'])
-    return speech_response(speech_text)
+    return speech_response(search_speech_text(parsed_request))
 
 if __name__ == '__main__':
     app.run(debug=DEBUG)

@@ -8,14 +8,20 @@
     "Family Room": 13,
     "Chris's Room": 14,
     "Kitchen 2": 15,
+    "Kitchen #2": 15,
+    "Kitchen to": 15,
+    "Kitchen number to": 15,
     "Tim's Room": 16,
     "Kitchen 1": 17,
+    "Kitchen #1": 17,
+    "Kitchen one": 17,
+    "Kitchen number one": 17,
     "Game Room": 18,
     "Living Room": 19,
     "Loft": 20,
     "Master Bath": 21,
     "Bill's Office": 22
   },
-  "DEFAULT_ROOM": 17,
+  "DEFAULT_ZONE": 17,
   "DEFAULT_QUEUE_TYPE": "ADD_AND_PLAY"
 }
