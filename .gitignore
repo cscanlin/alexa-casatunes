@@ -65,3 +65,4 @@ target/
 *.zip
 
 /alexa-casa
+/docker_env
