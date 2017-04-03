@@ -21,6 +21,4 @@ RUN virtualenv /var/venv && \
     pip install -U pip && \
     deactivate
 
-COPY bashrc /root/.bashrc
-
 CMD ["zappa"]

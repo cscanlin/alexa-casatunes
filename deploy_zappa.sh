@@ -1,15 +1,20 @@
 #!/bin/bash
 
 # TO RUN:
-# docker run -v $(pwd):/outputs -it amazonlinux:2016.09 bash /outputs/deploy_zappa.sh
-
 set -ex
 
-if [[ $1 == -f ]]; then
-  remove_env="rm -rf docker_env &&"
-else
-  remove_env=""
-fi
+remove_env=""
+update_deploy="update"
+stage="dev"
+
+while getopts ":fds:" arg; do
+  case $arg in
+    f ) remove_env="rm -rf docker_env &&";;
+    d ) update_deploy="deploy";;
+    s ) stage=${OPTARG};;
+    * ) exit 0;;
+  esac
+done
 
 main () {
   echo $remove_env
@@ -24,7 +29,7 @@ main () {
       source docker_env/bin/activate && \
       cd /var/alexa-casatunes/ && \
       pip install -r requirements.txt && \
-      zappa update dev
+      zappa $update_deploy $stage
     "
 }
 
