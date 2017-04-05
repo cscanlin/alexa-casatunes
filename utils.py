@@ -16,6 +16,9 @@ def load_casa_config(config_file):
 
 def parse_app_status(status_data):
     parsed_status_data = {}
+
+    parsed_status_data['zones'] = {zone_info['ZoneID']: zone_info for zone_info in status_data['d']['Zones']}
+
     now_playing_xml = status_data['d']['NowPlayingInfo'][0]['MediaItem']['DisplayXML']
     now_playing_root = ET.fromstring(now_playing_xml)
     for elem in now_playing_root.findall('line'):

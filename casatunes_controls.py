@@ -151,14 +151,51 @@ def set_room_volume(room, new_volume):
     )
     return speech_response(speech_text)
 
+@ask.intent('CasaIncreaseRoomVolume', mapping={'room': 'Room'})
+def increase_room_volume(room):
+    zone_id = CASA_CONFIG['ROOM_ZONE_MAP'][room.lower()]
+
+    parsed_status = parse_app_status(casa_command(endpoint='GetAppStatus'))
+    current_volume = parsed_status['zones'][zone_id]['Volume']
+    new_volume = current_volume + 10
+    casa_command(
+        endpoint='SetZoneVolume',
+        data={
+            'Volume': new_volume,
+            'ZoneID': str(zone_id),
+        },
+    )
+    speech_text = 'Setting volume in {room} to {new_volume}'.format(
+        room=room, new_volume=new_volume
+    )
+    return speech_response(speech_text)
+
+@ask.intent('CasaDecreaseRoomVolume', mapping={'room': 'Room'})
+def decrease_room_volume(room):
+    zone_id = CASA_CONFIG['ROOM_ZONE_MAP'][room.lower()]
+
+    parsed_status = parse_app_status(casa_command(endpoint='GetAppStatus'))
+    current_volume = parsed_status['zones'][zone_id]['Volume']
+    new_volume = current_volume - 10
+    casa_command(
+        endpoint='SetZoneVolume',
+        data={
+            'Volume': new_volume,
+            'ZoneID': str(zone_id),
+        },
+    )
+    speech_text = 'Setting volume in {room} to {new_volume}'.format(
+        room=room, new_volume=new_volume
+    )
+    return speech_response(speech_text)
+
 # NOW PLAYING
 
 @ask.intent('AMAZON.SearchAction<object@MusicRecording[byArtist]>')
 @ask.intent('AMAZON.SearchAction<object@MusicRecording[inAlbum]>')
 def now_playing_info():
-    status_response = casa_command(endpoint='GetAppStatus')
-    app_status = parse_app_status(status_response)
-    speech_text = 'This song is called {title} by {artists} from the album {album}'.format(**app_status)
+    parsed_status = parse_app_status(casa_command(endpoint='GetAppStatus'))
+    speech_text = 'This song is called {title} by {artists} from the album {album}'.format(**parsed_status)
     return speech_response(speech_text)
 
 # SEARCH

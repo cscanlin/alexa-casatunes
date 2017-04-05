@@ -50,6 +50,24 @@
       ]
     },
     {
+      "intent": "CasaIncreaseRoomVolume",
+      "slots": [
+        {
+          "name": "Room",
+          "type": "Room"
+        }
+      ]
+    },
+    {
+      "intent": "CasaDecreaseRoomVolume",
+      "slots": [
+        {
+          "name": "Room",
+          "type": "Room"
+        }
+      ]
+    },
+    {
       "intent": "AMAZON.SearchAction<object@MusicRecording[byArtist]>"
     },
     {

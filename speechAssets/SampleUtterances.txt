@@ -13,3 +13,7 @@ CasaSetRoomVolume change volume in {Room} to {Volume}
 CasaSetRoomVolume set volume in {Room} to {Volume}
 CasaSetRoomVolume change volume to {Volume} in {Room}
 CasaSetRoomVolume set volume to {Volume} in {Room}
+CasaIncreaseRoomVolume increase volume in {Room}
+CasaIncreaseRoomVolume turn up volume in {Room}
+CasaDecreaseRoomVolume decrease volume in {Room}
+CasaDecreaseRoomVolume turn down volume in {Room}
