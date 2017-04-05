@@ -31,6 +31,7 @@ def parse_search_request(search_request):
         'creative_name': deep_get(slot_data, 'object.name', 'value'),
         'artist': deep_get(slot_data, 'object.byArtist.name', 'value'),
         'creative_type': deep_get(slot_data, 'object.type', 'value'),
+        'owner_name': deep_get(slot_data, 'object.owner.name', 'value'),
     }
     if parsed_req['creative_type'] in ('music', None):
         if parsed_req['artist']:
@@ -39,13 +40,18 @@ def parse_search_request(search_request):
         else:
             parsed_req['creative_type'] = 'song'
 
-    if parsed_req['creative_name'].startswith('artist'):
-        parsed_req['creative_name'] = parsed_req['creative_name'].replace('artist', '')
-        parsed_req['creative_type'] = 'artist'
-        parsed_req['artist'] = parsed_req['creative_name']
+    if parsed_req['creative_name']:
+        if parsed_req['creative_name'].startswith('artist'):
+            parsed_req['creative_name'] = parsed_req['creative_name'].replace('artist', '')
+            parsed_req['creative_type'] = 'artist'
+            parsed_req['artist'] = parsed_req['creative_name']
 
-    if parsed_req['creative_name'].startswith('playlist'):
-        parsed_req['creative_name'] = parsed_req['creative_name'].replace('playlist', '')
+        if parsed_req['creative_name'].startswith('playlist'):
+            parsed_req['creative_name'] = parsed_req['creative_name'].replace('playlist', '')
+            parsed_req['creative_type'] = 'playlist'
+
+    if parsed_req['owner_name'] and parsed_req['owner_name'].lower().startswith('playlist'):
+        parsed_req['creative_name'] = parsed_req['owner_name'].replace('playlist', '')
         parsed_req['creative_type'] = 'playlist'
 
     parsed_req['search_text'] = parsed_req['creative_name']
