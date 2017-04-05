@@ -39,6 +39,15 @@ def parse_search_request(search_request):
         else:
             parsed_req['creative_type'] = 'song'
 
+    if parsed_req['creative_name'].startswith('artist'):
+        parsed_req['creative_name'] = parsed_req['creative_name'].replace('artist', '')
+        parsed_req['creative_type'] = 'artist'
+        parsed_req['artist'] = parsed_req['creative_name']
+
+    if parsed_req['creative_name'].startswith('playlist'):
+        parsed_req['creative_name'] = parsed_req['creative_name'].replace('playlist', '')
+        parsed_req['creative_type'] = 'playlist'
+
     parsed_req['search_text'] = parsed_req['creative_name']
     if parsed_req['artist'] and parsed_req['creative_type'] != 'artist':
         parsed_req['search_text'] += ' ' + parsed_req['artist']

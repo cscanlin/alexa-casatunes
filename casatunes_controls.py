@@ -33,6 +33,7 @@ ALEXA_CASA_TYPE_MAP = {
     'album': 'Albums',
     'song': 'Tracks',
     'genre': 'Playlists',
+    'playlist': 'Playlists',
 }
 
 def casa_route(endpoint):
