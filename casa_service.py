@@ -1,5 +1,4 @@
 import boto3
-import functools
 import json
 import logging
 import os
@@ -7,12 +6,15 @@ import paramiko
 
 logger = logging.getLogger('flask_ask')
 
-class CasaSSHContext(object):
+class CasaSSHService(object):
     LOCAL_SERVER_ROUTE = 'http://localhost'
     SERVICE_ROUTE = 'CasaTunes/CasaService.svc'
     CASA_HEADERS = {'Content-Type': 'application/json'}
 
-    def __enter__(self):
+    def __init__(self, ask=None):
+        self.ask = ask
+
+    def start(self):
         s3_client = boto3.client('s3')
         s3_client.download_file('alexa-casatunes', 'keys/casa_rsa', '/tmp/casa_rsa')
 
@@ -28,20 +30,19 @@ class CasaSSHContext(object):
         self.client = client
         return client
 
-    def __exit__(self, typ, val, traceback):
+    def close(self):
         self.client.close()
 
-    def __call__(self, f):
-        @functools.wraps(f)
-        def decorated(*args, **kwargs):
-            with self:
-                return f(ssh=self, *args, **kwargs)
-        return decorated
+    def __enter__(self):
+        return self.start()
+
+    def __exit__(self, typ, val, traceback):
+        self.close()
 
     @staticmethod
     def casa_route(endpoint):
         return '/'.join((
-            CasaSSHContext.LOCAL_SERVER_ROUTE, CasaSSHContext.SERVICE_ROUTE, endpoint
+            CasaSSHService.LOCAL_SERVER_ROUTE, CasaSSHService.SERVICE_ROUTE, endpoint
         ))
 
     def casa_command(self, endpoint, data=None):
