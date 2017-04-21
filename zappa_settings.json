@@ -1,13 +1,7 @@
 {
     "dev": {
         "aws_region": "us-east-1",
-        "app_function": "casatunes_controls.app",
-        "s3_bucket": "alexa-casatunes",
-        "use_precompiled_packages": true
-    },
-    "production": {
-        "aws_region": "us-east-1",
-        "app_function": "casatunes_controls.app",
+        "app_function": "alexa_casatunes.app",
         "s3_bucket": "alexa-casatunes",
         "use_precompiled_packages": true
     }

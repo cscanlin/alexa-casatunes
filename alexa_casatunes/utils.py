@@ -1,4 +1,5 @@
 import json
+import os
 import xml.etree.ElementTree as ET
 
 from collections import defaultdict
@@ -7,14 +8,14 @@ from fuzzywuzzy import fuzz, process
 
 def deep_get(dictionary, *keys):
     # http://stackoverflow.com/a/40675868/1883900
-    return reduce(lambda d, key: d.get(key, None) if hasattr(d, '__getitem__') else None, keys, dictionary)
+    return reduce(lambda d, key: d.get(key, '').lower() if hasattr(d, '__getitem__') else '', keys, dictionary)
 
 def load_room_zone_map(mapping_file):
     with open(mapping_file) as mf:
         return {room.lower(): zone_id for room, zone_id in json.load(mf).items()}
 
 def match_room_input(interpreted_room):
-    rz_map = load_room_zone_map('room_zone_map.json')
+    rz_map = load_room_zone_map(os.path.join('data', 'room_zone_map.json'))
     interpreted_room = interpreted_room.lower()
     if interpreted_room in rz_map.keys():
         room_name = interpreted_room
@@ -42,7 +43,7 @@ def parse_search_request(search_request):
         'owner_name': deep_get(slot_data, 'object.owner.name', 'value'),
     }
     # find creative type if none
-    if parsed_req['creative_type'] in ('music', None):
+    if parsed_req['creative_type'] in ('music', ''):
         if parsed_req['artist']:
             parsed_req['creative_type'] = 'artist'
             parsed_req['creative_name'] = parsed_req['artist']
@@ -59,7 +60,7 @@ def parse_search_request(search_request):
             parsed_req['creative_name'] = parsed_req['creative_name'].replace('playlist', '')
             parsed_req['creative_type'] = 'playlist'
 
-    if parsed_req['owner_name'] and parsed_req['owner_name'].lower().startswith('playlist'):
+    if parsed_req['owner_name'] and parsed_req['owner_name'].startswith('playlist'):
         parsed_req['creative_name'] = parsed_req['owner_name'].replace('playlist', '')
         parsed_req['creative_type'] = 'playlist'
 

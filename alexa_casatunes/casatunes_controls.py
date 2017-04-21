@@ -1,38 +1,16 @@
 import logging
 import os
 
-from flask import Flask, json, abort, g
-from flask_ask import Ask, statement, request, session
+from flask import json, abort, g
+from flask_ask import statement, request, session
 
 from casa_service import CasaSSHService
 from utils import match_room_input, parse_app_status, parse_search_request, parse_search_response, search_speech_text
 
+from alexa_casatunes import app, ask
+
 logger = logging.getLogger('flask_ask')
 logger.setLevel(logging.DEBUG)
-
-app = Flask(__name__)
-ask = Ask(app, '/')
-
-app.url_map.strict_slashes = False
-
-DEBUG = os.getenv('ALEXA_CASA_ENV') == 'dev'
-
-DEFAULT_ZONE = 0
-
-DEFAULT_QUEUE_TYPE = 'ADD_AND_PLAY'
-
-QUEUE_SPOT_MAP = {
-    'ADD_AND_PLAY': 2,
-}
-
-ALEXA_CASA_TYPE_MAP = {
-    'artist': 'Artists',
-    'album': 'Albums',
-    'song': 'Tracks',
-    'track': 'Tracks',
-    'genre': 'Playlists',
-    'playlist': 'Playlists',
-}
 
 def speech_response(speech_text):
     logger.info(speech_text)
@@ -40,7 +18,7 @@ def speech_response(speech_text):
 
 def require_allowed_user(f):
     def wrapped(*args, **kwargs):
-        if DEBUG or (session and session.user.userId in os.getenv('ALEXA_USER_ID').split(';')):
+        if app.config['DEBUG'] or (session and session.user.userId in os.getenv('ALEXA_USER_ID').split(';')):
             return f(*args, **kwargs)
         else:
             abort(403)
@@ -96,7 +74,7 @@ def next_song():
 # ROOM POWER
 
 @require_allowed_user
-@ask.intent('CasaTurnRoomOn', mapping={'room': 'Room'}, default={'room': DEFAULT_ZONE})
+@ask.intent('CasaTurnRoomOn', mapping={'room': 'Room'}, default={'room': app.config['DEFAULT_ZONE']})
 def turn_room_on(room):
     room, zone_id = match_room_input(room)
 
@@ -200,13 +178,13 @@ def now_playing_info():
 @ask.intent('AMAZON.SearchAction<object@MusicCreativeWork>')
 def find_and_play_song():
     parsed_request = parse_search_request(request)
-    casa_creative_type = ALEXA_CASA_TYPE_MAP[parsed_request['creative_type']]
+    casa_creative_type = app.config['ALEXA_CASA_TYPE_MAP'][parsed_request['creative_type']]
     logger.debug(json.dumps(parsed_request))
 
     search_response_data = g.ssh.casa_command(
         endpoint='SearchMediaCollectionByZone',
         data={
-            'ZoneID': DEFAULT_ZONE,
+            'ZoneID': app.config['DEFAULT_ZONE'],
             'SearchCurrentMusicServiceOnly': True,
             'Searchtext': parsed_request['search_text'],
         },
@@ -217,14 +195,14 @@ def find_and_play_song():
     g.ssh.casa_command(
         endpoint='PlayMediaCollectionOrItem2',
         data={
-            'ZoneID': DEFAULT_ZONE,
+            'ZoneID': app.config['DEFAULT_ZONE'],
             'ItemID': first_requested_item_id,
             'Filter': None,
-            'AddToQueue': QUEUE_SPOT_MAP[DEFAULT_QUEUE_TYPE],
+            'AddToQueue': app.config['QUEUE_SPOT_MAP'][app.config['DEFAULT_QUEUE_TYPE']],
         },
     )
 
     return speech_response(search_speech_text(parsed_request))
 
 if __name__ == '__main__':
-    app.run(debug=DEBUG)
+    app.run(debug=app.config['DEBUG'])

@@ -1,10 +1,7 @@
 import boto3
 import json
-import logging
 import os
 import paramiko
-
-logger = logging.getLogger('flask_ask')
 
 class CasaSSHService(object):
     LOCAL_SERVER_ROUTE = 'http://localhost'
@@ -57,5 +54,5 @@ class CasaSSHService(object):
         _, stdout, stderr = self.client.exec_command(command)
         response_data = json.loads(stdout.read())
 
-        logger.debug(json.dumps(response_data))
+        self.logger.debug(json.dumps(response_data))
         return response_data
