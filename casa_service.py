@@ -11,9 +11,6 @@ class CasaSSHService(object):
     SERVICE_ROUTE = 'CasaTunes/CasaService.svc'
     CASA_HEADERS = {'Content-Type': 'application/json'}
 
-    def __init__(self, ask=None):
-        self.ask = ask
-
     def start(self):
         s3_client = boto3.client('s3')
         s3_client.download_file('alexa-casatunes', 'keys/casa_rsa', '/tmp/casa_rsa')
@@ -28,7 +25,7 @@ class CasaSSHService(object):
             port=22222,
         )
         self.client = client
-        return client
+        return self
 
     def close(self):
         self.client.close()
@@ -48,6 +45,8 @@ class CasaSSHService(object):
     def casa_command(self, endpoint, data=None):
 
         data = data if data else {'ZoneID': 0}
+        if 'ZoneId' in data.keys():
+            data['ZoneId'] = str(data['ZoneId'])
 
         headers = ' '.join(['-H "{}: {}"'.format(k, v) for k, v in self.CASA_HEADERS.items()])
         command = 'curl -X POST {headers} -d \'{data}\' {route}'.format(

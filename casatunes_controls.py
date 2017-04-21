@@ -5,7 +5,7 @@ from flask import Flask, json, abort, g
 from flask_ask import Ask, statement, request, session
 
 from casa_service import CasaSSHService
-from utils import load_casa_config, parse_app_status, parse_search_request, parse_search_response, search_speech_text
+from utils import match_room_input, parse_app_status, parse_search_request, parse_search_response, search_speech_text
 
 logger = logging.getLogger('flask_ask')
 logger.setLevel(logging.DEBUG)
@@ -15,9 +15,9 @@ ask = Ask(app, '/')
 
 app.url_map.strict_slashes = False
 
-CASA_CONFIG = load_casa_config('casa_config.json')
-
 DEBUG = os.getenv('ALEXA_CASA_ENV') == 'dev'
+
+DEFAULT_ZONE = 0
 
 DEFAULT_QUEUE_TYPE = 'ADD_AND_PLAY'
 
@@ -29,6 +29,7 @@ ALEXA_CASA_TYPE_MAP = {
     'artist': 'Artists',
     'album': 'Albums',
     'song': 'Tracks',
+    'track': 'Tracks',
     'genre': 'Playlists',
     'playlist': 'Playlists',
 }
@@ -59,13 +60,11 @@ def after_request(response):
 @ask.intent('HelloIntent')
 def hello():
     speech_text = 'Hello, welcome to Alexa Casa Tunes'
-    logger.info(speech_text)
     return speech_response(speech_text)
 
 # PLAYBACK
 
 @require_allowed_user
-@app.route('/play')
 @ask.intent('AMAZON.ResumeIntent')
 @ask.intent('CasaPlay')
 def play_song():
@@ -74,7 +73,6 @@ def play_song():
     return speech_response(speech_text)
 
 @require_allowed_user
-@app.route('/pause')
 @ask.intent('AMAZON.PauseIntent')
 def pause_song():
     g.ssh.casa_command(endpoint='PauseSong')
@@ -98,13 +96,15 @@ def next_song():
 # ROOM POWER
 
 @require_allowed_user
-@ask.intent('CasaTurnRoomOn', mapping={'room': 'Room'}, default={'room': CASA_CONFIG['DEFAULT_ZONE']})
+@ask.intent('CasaTurnRoomOn', mapping={'room': 'Room'}, default={'room': DEFAULT_ZONE})
 def turn_room_on(room):
+    room, zone_id = match_room_input(room)
+
     g.ssh.casa_command(
         endpoint='SetZonePower',
         data={
             'Power': True,
-            'ZoneID': str(CASA_CONFIG['ROOM_ZONE_MAP'][room.lower()]),
+            'ZoneID': zone_id,
         },
     )
     speech_text = 'Turning on music in {room}'.format(room=room)
@@ -113,11 +113,13 @@ def turn_room_on(room):
 @require_allowed_user
 @ask.intent('CasaTurnRoomOff', mapping={'room': 'Room'})
 def turn_room_off(room):
+    room, zone_id = match_room_input(room)
+
     g.ssh.casa_command(
         endpoint='SetZonePower',
         data={
             'Power': False,
-            'ZoneID': str(CASA_CONFIG['ROOM_ZONE_MAP'][room.lower()]),
+            'ZoneID': zone_id,
         },
     )
     speech_text = 'Turning off music in {room}'.format(room=room)
@@ -128,11 +130,13 @@ def turn_room_off(room):
 @require_allowed_user
 @ask.intent('CasaSetRoomVolume', mapping={'room': 'Room', 'new_volume': 'Volume'})
 def set_room_volume(room, new_volume):
+    room, zone_id = match_room_input(room)
+
     g.ssh.casa_command(
         endpoint='SetZoneVolume',
         data={
             'Volume': new_volume,
-            'ZoneID': str(CASA_CONFIG['ROOM_ZONE_MAP'][room.lower()]),
+            'ZoneID': zone_id,
         },
     )
     speech_text = 'Setting volume in {room} to {new_volume}'.format(
@@ -143,7 +147,7 @@ def set_room_volume(room, new_volume):
 @require_allowed_user
 @ask.intent('CasaIncreaseRoomVolume', mapping={'room': 'Room'})
 def increase_room_volume(room):
-    zone_id = CASA_CONFIG['ROOM_ZONE_MAP'][room.lower()]
+    room, zone_id = match_room_input(room)
 
     parsed_status = parse_app_status(g.ssh.casa_command(endpoint='GetAppStatus'))
     current_volume = parsed_status['zones'][zone_id]['Volume']
@@ -152,7 +156,7 @@ def increase_room_volume(room):
         endpoint='SetZoneVolume',
         data={
             'Volume': new_volume,
-            'ZoneID': str(zone_id),
+            'ZoneID': zone_id,
         },
     )
     speech_text = 'Setting volume in {room} to {new_volume}'.format(
@@ -163,7 +167,7 @@ def increase_room_volume(room):
 @require_allowed_user
 @ask.intent('CasaDecreaseRoomVolume', mapping={'room': 'Room'})
 def decrease_room_volume(room):
-    zone_id = CASA_CONFIG['ROOM_ZONE_MAP'][room.lower()]
+    room, zone_id = match_room_input(room)
 
     parsed_status = parse_app_status(g.ssh.casa_command(endpoint='GetAppStatus'))
     current_volume = parsed_status['zones'][zone_id]['Volume']
@@ -172,7 +176,7 @@ def decrease_room_volume(room):
         endpoint='SetZoneVolume',
         data={
             'Volume': new_volume,
-            'ZoneID': str(zone_id),
+            'ZoneID': zone_id,
         },
     )
     speech_text = 'Setting volume in {room} to {new_volume}'.format(
@@ -202,7 +206,7 @@ def find_and_play_song():
     search_response_data = g.ssh.casa_command(
         endpoint='SearchMediaCollectionByZone',
         data={
-            'ZoneID': str(CASA_CONFIG['DEFAULT_ZONE']),
+            'ZoneID': DEFAULT_ZONE,
             'SearchCurrentMusicServiceOnly': True,
             'Searchtext': parsed_request['search_text'],
         },
@@ -213,7 +217,7 @@ def find_and_play_song():
     g.ssh.casa_command(
         endpoint='PlayMediaCollectionOrItem2',
         data={
-            'ZoneID': str(CASA_CONFIG['DEFAULT_ZONE']),
+            'ZoneID': DEFAULT_ZONE,
             'ItemID': first_requested_item_id,
             'Filter': None,
             'AddToQueue': QUEUE_SPOT_MAP[DEFAULT_QUEUE_TYPE],

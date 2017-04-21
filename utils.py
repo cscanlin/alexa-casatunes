@@ -3,16 +3,24 @@ import xml.etree.ElementTree as ET
 
 from collections import defaultdict
 from functools import reduce
+from fuzzywuzzy import fuzz, process
 
 def deep_get(dictionary, *keys):
     # http://stackoverflow.com/a/40675868/1883900
     return reduce(lambda d, key: d.get(key, None) if hasattr(d, '__getitem__') else None, keys, dictionary)
 
-def load_casa_config(config_file):
-    with open(config_file) as cf:
-        config = json.load(cf)
-        config['ROOM_ZONE_MAP'] = {k.lower(): v for k, v in config['ROOM_ZONE_MAP'].items()}
-    return config
+def load_room_zone_map(mapping_file):
+    with open(mapping_file) as mf:
+        return {room.lower(): zone_id for room, zone_id in json.load(mf).items()}
+
+def match_room_input(interpreted_room):
+    rz_map = load_room_zone_map('room_zone_map.json')
+    interpreted_room = interpreted_room.lower()
+    if interpreted_room in rz_map.keys():
+        room_name = interpreted_room
+    else:
+        room_name = process.extractOne(interpreted_room, rz_map.keys(), scorer=fuzz.token_sort_ratio)[0]
+    return room_name, rz_map[room_name]
 
 def parse_app_status(status_data):
     parsed_status_data = {}
@@ -33,6 +41,7 @@ def parse_search_request(search_request):
         'creative_type': deep_get(slot_data, 'object.type', 'value'),
         'owner_name': deep_get(slot_data, 'object.owner.name', 'value'),
     }
+    # find creative type if none
     if parsed_req['creative_type'] in ('music', None):
         if parsed_req['artist']:
             parsed_req['creative_type'] = 'artist'
@@ -65,6 +74,7 @@ def parse_search_response(search_data):
     media_items = search_data['d']['MediaItems'][1:]
     for item in media_items:
         item_creative_type = next(a for a in item['Attributes'] if a['Key'] == 'GroupName')['Value']
+        item_creative_type = item_creative_type.replace('Windows Music ', '')
         parsed_resp[item_creative_type].append(item)
     return parsed_resp
 
