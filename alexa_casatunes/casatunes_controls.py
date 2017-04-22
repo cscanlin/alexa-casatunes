@@ -3,8 +3,14 @@ import os
 from flask import json, abort, g
 from flask_ask import statement, request, session
 
-from casa_service import CasaSSHService
-from utils import match_room_input, parse_app_status, parse_search_request, parse_search_response, search_speech_text
+from alexa_casatunes.casa_service import CasaSSHService
+from alexa_casatunes.utils import (
+    match_room_input,
+    parse_app_status,
+    parse_search_request,
+    parse_search_response,
+    search_speech_text,
+)
 
 from alexa_casatunes import app, ask
 
@@ -198,6 +204,3 @@ def find_and_play_song():
     )
 
     return speech_response(search_speech_text(parsed_request))
-
-if __name__ == '__main__':
-    app.run(debug=app.config['DEBUG'])

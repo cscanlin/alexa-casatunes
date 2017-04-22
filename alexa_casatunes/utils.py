@@ -6,6 +6,8 @@ from collections import defaultdict
 from functools import reduce
 from fuzzywuzzy import fuzz, process
 
+from alexa_casatunes import app
+
 def deep_get(dictionary, *keys):
     # http://stackoverflow.com/a/40675868/1883900
     return reduce(lambda d, key: d.get(key, '').lower() if hasattr(d, '__getitem__') else '', keys, dictionary)
@@ -15,8 +17,8 @@ def load_room_zone_map(mapping_file):
         return {room.lower(): zone_id for room, zone_id in json.load(mf).items()}
 
 def match_room_input(interpreted_room):
-    rz_map = load_room_zone_map(os.path.join('data', 'room_zone_map.json'))
-    interpreted_room = interpreted_room.lower()
+    rz_map = load_room_zone_map(os.path.join(app.root_path, 'data', 'room_zone_map.json'))
+    interpreted_room = str(interpreted_room).lower()
     if interpreted_room in rz_map.keys():
         room_name = interpreted_room
     else:
