@@ -13,7 +13,7 @@ class CasaSSHService(object):
 
     def start(self):
         s3_client = boto3.client('s3')
-        s3_client.download_file('alexa-casatunes', 'keys/casa_rsa', '/tmp/casa_rsa')
+        s3_client.download_file(os.getenv('CASA_S3_BUCKET_NAME'), 'keys/casa_rsa', '/tmp/casa_rsa')
 
         client = paramiko.SSHClient()
         client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
@@ -22,7 +22,7 @@ class CasaSSHService(object):
             username='casa',
             password=os.getenv('CASA_SSH_PASSWORD'),
             key_filename='/tmp/casa_rsa',
-            port=22222,
+            port=int(os.getenv('CASA_SERVER_PORT')),
         )
         self.client = client
         return self
