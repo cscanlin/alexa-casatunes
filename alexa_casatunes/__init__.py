@@ -1,3 +1,4 @@
+import logging
 import os
 
 from flask import Flask
@@ -17,5 +18,6 @@ app.config.from_object(config_options[config_name])
 
 app.url_map.strict_slashes = False
 
+app.logger.setLevel(logging.DEBUG)
 
-from alexa_casatunes import casa_service
+from alexa_casatunes import casatunes_controls

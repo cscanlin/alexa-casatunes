@@ -1,0 +1,208 @@
+{
+  "intents": [
+    {
+      "name": "AMAZON.CancelIntent",
+      "samples": []
+    },
+    {
+      "name": "AMAZON.HelpIntent",
+      "samples": []
+    },
+    {
+      "name": "AMAZON.NextIntent",
+      "samples": []
+    },
+    {
+      "name": "AMAZON.PauseIntent",
+      "samples": []
+    },
+    {
+      "name": "AMAZON.PreviousIntent",
+      "samples": []
+    },
+    {
+      "name": "AMAZON.ResumeIntent",
+      "samples": [
+        "play music",
+        "start playing",
+        "start playing music"
+      ]
+    },
+    {
+      "name": "AMAZON.SearchAction<object@MusicCreativeWork>"
+    },
+    {
+      "name": "AMAZON.SearchAction<object@MusicRecording[byArtist]>"
+    },
+    {
+      "name": "AMAZON.SearchAction<object@MusicRecording[inAlbum]>"
+    },
+    {
+      "name": "AMAZON.StopIntent",
+      "samples": []
+    },
+    {
+      "name": "CasaDecreaseRoomVolume",
+      "samples": [
+        "decrease volume in {Room}",
+        "turn down volume in {Room}"
+      ],
+      "slots": [
+        {
+          "name": "Room",
+          "type": "Room",
+          "samples": []
+        }
+      ]
+    },
+    {
+      "name": "CasaIncreaseRoomVolume",
+      "samples": [
+        "increase volume in {Room}",
+        "turn up volume in {Room}"
+      ],
+      "slots": [
+        {
+          "name": "Room",
+          "type": "Room",
+          "samples": []
+        }
+      ]
+    },
+    {
+      "name": "CasaSetRoomVolume",
+      "samples": [
+        "change volume in {Room} to {Volume}",
+        "set volume in {Room} to {Volume}",
+        "change volume to {Volume} in {Room}",
+        "set volume to {Volume} in {Room}"
+      ],
+      "slots": [
+        {
+          "name": "Room",
+          "type": "Room",
+          "samples": []
+        },
+        {
+          "name": "Volume",
+          "type": "AMAZON.NUMBER",
+          "samples": []
+        }
+      ]
+    },
+    {
+      "name": "CasaTurnRoomOff",
+      "samples": [
+        "turn off {Room}",
+        "turn off music in {Room}",
+        "stop playing music in {Room}"
+      ],
+      "slots": [
+        {
+          "name": "Room",
+          "type": "Room",
+          "samples": []
+        }
+      ]
+    },
+    {
+      "name": "CasaTurnRoomOn",
+      "samples": [
+        "turn on {Room}",
+        "turn on music in {Room}",
+        "start playing music in {Room}"
+      ],
+      "slots": [
+        {
+          "name": "Room",
+          "type": "Room",
+          "samples": []
+        }
+      ]
+    },
+    {
+      "name": "HelloIntent",
+      "samples": [
+        "say hello"
+      ],
+      "slots": []
+    }
+  ],
+  "types": [
+    {
+      "name": "Room",
+      "values": [
+        {
+          "name": {
+            "value": "Outside"
+          }
+        },
+        {
+          "name": {
+            "value": "Wine Room Audio"
+          }
+        },
+        {
+          "name": {
+            "value": "Dining Room"
+          }
+        },
+        {
+          "name": {
+            "value": "Sun Room"
+          }
+        },
+        {
+          "name": {
+            "value": "Family Room"
+          }
+        },
+        {
+          "name": {
+            "value": "Chris's Room"
+          }
+        },
+        {
+          "name": {
+            "value": "Kitchen 2"
+          }
+        },
+        {
+          "name": {
+            "value": "Tim's Room"
+          }
+        },
+        {
+          "name": {
+            "value": "Kitchen 1"
+          }
+        },
+        {
+          "name": {
+            "value": "Game Room"
+          }
+        },
+        {
+          "name": {
+            "value": "Living Room"
+          }
+        },
+        {
+          "name": {
+            "value": "Loft"
+          }
+        },
+        {
+          "name": {
+            "value": "Master Bath"
+          }
+        },
+        {
+          "name": {
+            "value": "Bill's Office"
+          }
+        }
+      ]
+    }
+  ]
+}

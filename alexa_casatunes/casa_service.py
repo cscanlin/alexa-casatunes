@@ -8,6 +8,9 @@ class CasaSSHService(object):
     SERVICE_ROUTE = 'CasaTunes/CasaService.svc'
     CASA_HEADERS = {'Content-Type': 'application/json'}
 
+    def __init__(self, logger):
+        self.logger = logger
+
     def start(self):
         s3_client = boto3.client('s3')
         s3_client.download_file('alexa-casatunes', 'keys/casa_rsa', '/tmp/casa_rsa')
