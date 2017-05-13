@@ -1,6 +1,22 @@
-## alexa-casatunes
+# alexa-casatunes
 
 Control CasaTunes with Alexa
+
+### Available Commands
+
+ - Play / Pause
+ - Previous / Next Song
+ - Turn Room On / Off
+ - Set Volume in Room
+ - Increase / Decrease Volume in Room
+ - Now Playing Info
+ - Search for Track / Artist / Album / Playlist
+
+#### Planned Commands (With Conversational Support)
+
+ - Wake Alarms / Sleep Timers
+ - Better Search (source selection + conversational)
+ - Playlist / Queue Management
 
 ### Deploying
 
@@ -17,15 +33,15 @@ Also, I'm working on building this out so it can be properly deployed as a real 
 2. Setup SSH on your CasaTunes server, following the instructions here:
 https://superuser.com/a/1114162/401859
 
-  - Note that you should not use the default port (22), using a different unused port instead (22222 recommended). Record which port you use, as it will be need later
+    - Note that you should not use the default port (22), use a different unused port instead (22222 recommended). Record which port you use, as it will be need later
 
-  - You will also create a password at some point in the setup. Remember this as well.
+    - You will also create a password at some point in the setup. Remember this as well.
 
 3. Forward the port above through your router.
 
 4. Create an ssh key called `casa_rsa` and add the public key to the server in the authorized_keys file (usually found in `C:\Users\<user>\.ssh\`)
 
-5. Upload the ssh private key to a directory called `keys` in your s3 bucket.
+5. Upload the `casa_rsa` private key to a directory called `keys` in your s3 bucket.
 
 #### Alexa / Lambda Setup
 
@@ -39,13 +55,13 @@ https://superuser.com/a/1114162/401859
 
 5. Build the docker image:
 
-    docker build -t zappa .
+    ```docker build -t zappa .```
 
 6. Deploy to AWS Lambda using Zappa
 
-    sh deploy_zappa.sh -d  # you only need `-d` flag for initial deploy
+    ```sh deploy_zappa.sh -d  # you only need the `-d` flag for initial deploy```
 
-    - Will take a few minutes to run; record the url generated after it finishes
+    - This will take a few minutes to run; record the url generated after it finishes
 
 7. Go to https://developer.amazon.com/alexa-skills-kit and create a new Alexa skill
 
@@ -60,20 +76,3 @@ https://superuser.com/a/1114162/401859
     - `CASA_SERVER_PORT` - From earlier ssh setup (22222 recommended)
     - `CASA_S3_BUCKET_NAME` - Your s3 bucket (likely same as in `zappa_settings.json`)
     - `CASA_SSH_PASSWORD` - From earlier ssh setup
-
-
-### Available Commands
-
- - Play / Pause
- - Previous / Next Song
- - Turn Room On / Off
- - Set Volume in Room
- - Increase / Decrease Volume in Room
- - Now Playing Info
- - Search for Track / Artist / Album / Playlist
-
-### Planned Commands (With Conversational Support)
-
- - Wake Alarms / Sleep Timers
- - Better Search (source selection + conversational)
- - Playlist / Queue Management
