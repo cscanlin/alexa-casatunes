@@ -10,7 +10,7 @@ from alexa_casatunes import app
 
 def deep_get(dictionary, *keys):
     # http://stackoverflow.com/a/40675868/1883900
-    return reduce(lambda d, key: d.get(key, '').lower() if hasattr(d, '__getitem__') else '', keys, dictionary)
+    return reduce(lambda d, key: d.get(key, '') if isinstance(d, dict) else '', keys, dictionary).lower()
 
 def load_room_zone_map(mapping_file):
     with open(mapping_file) as mf:
